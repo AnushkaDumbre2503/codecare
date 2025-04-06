@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Code Care</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="logo">CODE CARE
+            <img src="logo.png" alt="logo" height="20px">
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="INDEX.HTML">HOME</a></li>
+                <li><a href="stories.html">STORIES</a></li>
+                <li><a href="Index2.html">ABOUT US</a></li>
+                <li><a href="login.html">LOGIN</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+              <a href="campaigns.html"><h3>CAMPAIGNS</h3></a> 
+            </div>
+            <div class="sidebar-section">
+               <a href="meetups.html"><h3>MEET UPS</h3></a> 
+            </div>
+            <div class="sidebar-section">
+                <h3>DOMAINS FOR CARE</h3>
+                <ul class="domains-list">
+                    <a href="health.html"><li><span class="dot"></span> Health</li></a>
+                    <a href="disaster.html"><li><span class="dot"></span> Disaster Relief</li></a>
+                    <a href="education-ngos.html"><li><span class="dot"></span> Education</li></a>
+                    <a href="environment-ngos.html"><li><span class="dot"></span> Environment Conservation</li></a>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Add Post Form -->
+        <section class="add-post-section">
+            <h2>Add a New Post</h2>
+            <form id="addPostForm">
+                <input type="text" id="postTitle" placeholder="Post Title" required /><br /><br />
+                <textarea id="postDescription" placeholder="Post Description" required></textarea><br /><br />
+                <input type="url" id="postImageUrl" placeholder="Image URL (optional)" /><br /><br />
+                <button type="submit">Add Post</button>
+            </form>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Posts will be dynamically inserted here -->
+            <p>Loading posts...</p>
+        </main>
+
+        <!-- Profile Section -->
+        <aside class="profile-section">
+            <h2>PROFILE</h2>
+            <div class="profile-pic">
+                <img src="prof.jpg" alt="Profile Picture">
+            </div>
+            <div class="profile-details">
+                <p><strong>Name:</strong> John Doe</p>
+                <p><strong>Location:</strong> City, Country</p>
+                <p><strong>Contributions:</strong> 5</p>
+            </div>
+        </aside>
+    </div>
+
+    <footer class="footer">
+        &copy; 2025 Code Care. All rights reserved.
+    </footer>
+
+    <!-- FIREBASE & JS CODE GOES HERE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwX2VlkdgQSC0Lp10XLni5-QlU2hwj4P4",
+            authDomain: "codecare2503.firebaseapp.com",
+            projectId: "codecare2503",
+            storageBucket: "codecare2503.appspot.com",
+            messagingSenderId: "934670174568",
+            appId: "1:934670174568:web:51987743767f02261c2edd"
+        };
+
+        // Initialize Firebase & Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Fetch posts from Firestore
+        async function fetchPosts() {
+            const postsCol = collection(db, "posts");
+            const postSnapshot = await getDocs(postsCol);
+            const postList = postSnapshot.docs.map(doc => doc.data());
+
+            const mainContent = document.querySelector('.main-content');
+            mainContent.innerHTML = ''; // Clear existing content
+
+            if (postList.length === 0) {
+                mainContent.innerHTML = '<p>No posts yet. Be the first to post!</p>';
+                return;
+            }
+
+            postList.forEach(post => {
+                const postCard = document.createElement('div');
+                postCard.classList.add('post-card');
+
+                postCard.innerHTML = `
+          <h3>${post.title}</h3>
+          <p>${post.description}</p>
+          ${post.imageUrl ? `<img src="${post.imageUrl}" alt="${post.title}" style="width:100%;height:auto;">` : ''}
+        `;
+
+                mainContent.appendChild(postCard);
+            });
+        }
+
+        fetchPosts(); // Call function on page load
+
+        // ADD NEW POST FUNCTION
+        async function addPost(title, description, imageUrl) {
+            try {
+                const postsCol = collection(db, "posts");
+                await addDoc(postsCol, {
+                    title: title,
+                    description: description,
+                    imageUrl: imageUrl || ''
+                });
+                alert("Post added successfully!");
+                fetchPosts(); // Refresh posts after adding
+            } catch (error) {
+                console.error("Error adding post: ", error);
+            }
+        }
+
+        // Handle form submission
+        const addPostForm = document.getElementById('addPostForm');
+        addPostForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Stop page reload
+
+            const title = document.getElementById('postTitle').value.trim();
+            const description = document.getElementById('postDescription').value.trim();
+            const imageUrl = document.getElementById('postImageUrl').value.trim();
+
+            if (!title || !description) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+
+            addPost(title, description, imageUrl);
+
+            // Clear form fields
+            addPostForm.reset();
+        });
+    </script>
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="script.js"></script>
+
+
+
+</body>
+
+</html>
